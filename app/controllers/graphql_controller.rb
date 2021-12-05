@@ -9,17 +9,31 @@ class GraphqlController < ApplicationController
     query = params[:query]
     operation_name = params[:operationName]
     context = {
-      # Query context goes here, for example:
-      # current_user: current_user,
+      session: session,
+      current_user: current_user
     }
     result = GraphqlTutorialSchema.execute(query, variables: variables, context: context, operation_name: operation_name)
     render json: result
-  rescue => e
+  rescue ActiveSupport => e
     raise e unless Rails.env.development?
+
     handle_error_in_development e
   end
 
   private
+
+  # gets current user from token stored in the sessions
+  def current_user
+    # uf we want to change the sign-in strategy, this is the place to do it
+    return unless session[:token]
+
+    crypt = ActiveSupport::MessageEncryptor.new(Rails.application.credentials.secret_key_base.byteslice(0..31))
+    token = crypt.decrypt_and_verify session[:token]
+    user_id = token.gsub('user-id', '').to_i
+    User.find user_id
+  rescue ActiveSupport::MessageVerifier::InvalidSignature
+    nil
+  end
 
   # Handle variables in form data, JSON body, or a blank value
   def prepare_variables(variables_param)
@@ -41,10 +55,10 @@ class GraphqlController < ApplicationController
     end
   end
 
-  def handle_error_in_development(e)
-    logger.error e.message
-    logger.error e.backtrace.join("\n")
+  def handle_error_in_development(err)
+    logger.error err.message
+    logger.error err.backtrace.join("\n")
 
-    render json: { errors: [{ message: e.message, backtrace: e.backtrace }], data: {} }, status: 500
+    render json: { errors: [{ message: err.message, backtrace: err.backtrace }], data: {} }, status: 500
   end
 end
