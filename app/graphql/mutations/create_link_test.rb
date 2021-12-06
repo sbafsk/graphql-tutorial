@@ -8,7 +8,7 @@ class Mutations::CreateLinkTest < ActiveSupport::TestCase
   test 'create a new link' do
     link = perform(
       url: 'example-test.url',
-      description: 'some desc',
+      description: 'some desc'
     )
 
     assert link.persisted?
