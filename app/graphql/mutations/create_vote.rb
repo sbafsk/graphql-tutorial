@@ -1,4 +1,7 @@
+# fronzen-string-literal: true
+
 module Mutations
+  # Create Vote Class
   class CreateVote < BaseMutation
     argument :link_id, ID, required: false
 
@@ -11,5 +14,4 @@ module Mutations
       )
     end
   end
-
 end

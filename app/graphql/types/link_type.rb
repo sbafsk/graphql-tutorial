@@ -1,3 +1,6 @@
+# frozen_string_literal: true
+
+# Link Types for GraphQL
 module Types
   class LinkType < Types::BaseObject
     field :id, ID, null: false
@@ -5,5 +8,6 @@ module Types
     field :description, String, null: false
 
     field :posted_by, UserType, null: true, method: :user
+    field :votes, [Types::VoteType], null: false
   end
 end
